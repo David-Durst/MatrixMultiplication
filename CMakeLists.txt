@@ -33,6 +33,13 @@ configure_file(
     "${PROJECT_BINARY_DIR}/include/MatrixConfig.h"
 )
 
+# move the python test over
+configure_file(
+    "${PROJECT_SOURCE_DIR}/python/matrix_generator.py"
+    "${PROJECT_BINARY_DIR}/python/matrix_generator.py"
+    COPYONLY
+)
+
 add_executable(matrix_multiplication ${MULT_SOURCES})
 
 
@@ -44,7 +51,7 @@ install (FILES "${PROJECT_BINARY_DIR}/include/MatrixConfig.h"
 # build a CPack driven installer package
 include (InstallRequiredSystemLibraries)
 set (CPACK_RESOURCE_FILE_LICENSE
-    "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
+    "${CMAKE_CURRENT_SOURCE_DIR}/License")
 set (CPACK_PACKAGE_VERSION_MAJOR "${Tutorial_VERSION_MAJOR}")
 set (CPACK_PACKAGE_VERSION_MINOR "${Tutorial_VERSION_MINOR}")
 include (CPack)
