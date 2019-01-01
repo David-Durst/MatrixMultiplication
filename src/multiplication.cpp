@@ -9,6 +9,9 @@
 
 void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, int **matrix);
 
+void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_matrix_cols, int **left_matrix,
+                       int **right_matrix, int **output_matrix);
+
 int main (int argc, char * argv[]) {
     fprintf(stdout, "%s Version %d.%d", argv[0], Matrix_VERSION_MAJOR,
         Matrix_VERSION_MINOR);
@@ -61,16 +64,7 @@ int main (int argc, char * argv[]) {
     load_matrix(right_matrix_file, right_matrix_rows, right_matrix_cols, right_matrix);
     right_matrix_file.close();
 
-    // multiply matrices
-    for (int left_row = 0; left_row < left_matrix_rows; left_row++) {
-        for (int right_col = 0; right_col < right_matrix_cols; right_col++) {
-            for (int shared_dim = 0; shared_dim < left_matrix_cols; shared_dim++) {
-                output_matrix[left_row][right_col] +=
-                    left_matrix[left_row][shared_dim] *
-                    right_matrix[shared_dim][right_col];
-            }
-        }
-    }
+    multiply_matrices(left_matrix_rows, left_matrix_cols, right_matrix_cols, left_matrix, right_matrix, output_matrix);
 
     // save output
     for (int output_row = 0; output_row < output_matrix_rows; output_row++) {
@@ -99,6 +93,19 @@ int main (int argc, char * argv[]) {
     delete [] output_matrix;
 
     return 0;
+}
+
+void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_matrix_cols, int **left_matrix,
+                       int **right_matrix, int **output_matrix) {
+    for (int left_row = 0; left_row < left_matrix_rows; left_row++) {
+        for (int right_col = 0; right_col < right_matrix_cols; right_col++) {
+            for (int shared_dim = 0; shared_dim < left_matrix_cols; shared_dim++) {
+                output_matrix[left_row][right_col] +=
+                    left_matrix[left_row][shared_dim] *
+                    right_matrix[shared_dim][right_col];
+            }
+        }
+    }
 }
 
 void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, int **matrix) {// load data into matrices
