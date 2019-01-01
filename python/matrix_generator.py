@@ -27,11 +27,14 @@ np.savetxt(output_dir + "/left_matrix.csv", left_matrix, delimiter=",")
 np.savetxt(output_dir + "/right_matrix.csv", right_matrix, delimiter=",")
 np.savetxt(output_dir + "/product_matrix.csv", product_matrix, delimiter=",")
 
-os.system("%s/matrix_multiplication %s %s".format(
+os.system("%s/matrix_multiplication %s %s %s %s %s %s".format(
     path_to_binary,
     output_dir + "/left_matrix.csv",
     output_dir + "/right_matrix.csv",
-    output_dir + "/cxx_product_matrix.csv"))
+    output_dir + "/cxx_product_matrix.csv",
+    num_rows_left_matrix,
+    num_cols_left_matrix,
+    num_cols_right_matrix))
 
 if not filecmp.cmp(output_dir + "/product_matrix.csv",
                    output_dir + "/cxx_product_matrix.csv"):
