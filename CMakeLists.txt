@@ -1,9 +1,9 @@
 cmake_minimum_required (VERSION 3.12)
 project (Matrix_Multiplication)
 
-include_directories(include)
+include_directories(${PROJECT_BINARY_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 file(GLOB MULT_SOURCES "${PROJECT_SOURCE_DIR}/src/*.cpp")
-add_executable(matrix_multiplication ${MULT_SOURCES})
 
 # The version number
 set (Matrix_VERSION_MAJOR 0)
@@ -29,6 +29,22 @@ endif()
 # configure a header file to pass some fo the CMake settings
 # to the source code
 configure_file(
-    "${PROJECT_SOURCE_DIR}/include/TutorialConfig.h.in"
-    "${PROJECT_BINARY_DIR}/include/TutorialConfig.h"
+    "${PROJECT_SOURCE_DIR}/include/MatrixConfig.h.in"
+    "${PROJECT_BINARY_DIR}/include/MatrixConfig.h"
 )
+
+add_executable(matrix_multiplication ${MULT_SOURCES})
+
+
+# add the install targets
+install (TARGETS matrix_multiplication DESTINATION bin)
+install (FILES "${PROJECT_BINARY_DIR}/include/MatrixConfig.h"
+    DESTINATION include)
+
+# build a CPack driven installer package
+include (InstallRequiredSystemLibraries)
+set (CPACK_RESOURCE_FILE_LICENSE
+    "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
+set (CPACK_PACKAGE_VERSION_MAJOR "${Tutorial_VERSION_MAJOR}")
+set (CPACK_PACKAGE_VERSION_MINOR "${Tutorial_VERSION_MINOR}")
+include (CPack)
