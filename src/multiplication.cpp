@@ -13,7 +13,7 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
                        int **right_matrix, int **output_matrix);
 
 int main (int argc, char * argv[]) {
-    fprintf(stdout, "%s Version %d.%d", argv[0], Matrix_VERSION_MAJOR,
+    fprintf(stdout, "%s Version %d.%d \n", argv[0], Matrix_VERSION_MAJOR,
         Matrix_VERSION_MINOR);
 
     // get files and make sure open inputs
@@ -59,8 +59,10 @@ int main (int argc, char * argv[]) {
     }
 
     // load the matrices data from disk to memory
+    std::cout << "loading left matrix" << std::endl;
     load_matrix(left_matrix_file, left_matrix_rows, left_matrix_cols, left_matrix);
     left_matrix_file.close();
+    std::cout << "loading right matrix" << std::endl;
     load_matrix(right_matrix_file, right_matrix_rows, right_matrix_cols, right_matrix);
     right_matrix_file.close();
 
