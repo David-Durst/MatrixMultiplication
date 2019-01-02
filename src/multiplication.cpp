@@ -101,12 +101,14 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
                        int **right_matrix, int **output_matrix) {
     for (int left_row = 0; left_row < left_matrix_rows; left_row++) {
         for (int right_col = 0; right_col < right_matrix_cols; right_col++) {
+            output_matrix[left_row][right_col] = 0;
             for (int shared_dim = 0; shared_dim < left_matrix_cols; shared_dim++) {
                 printf("Left  (%d, %d): %d \n", left_row, shared_dim, left_matrix[left_row][shared_dim]);
                 printf("Right (%d, %d): %d \n", shared_dim, right_col, right_matrix[shared_dim][right_col]);
                 output_matrix[left_row][right_col] +=
                     left_matrix[left_row][shared_dim] *
                     right_matrix[shared_dim][right_col];
+                printf("Output (%d, %d): %d \n", left_row, right_col, output_matrix[left_row][right_col]);
             }
         }
     }
