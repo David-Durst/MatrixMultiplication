@@ -115,9 +115,9 @@ int main (int argc, char * argv[]) {
     return 0;
 }
 
-#define TILE_SIZE_LEFT_ROW 8
-#define TILE_SIZE_RIGHT_COL 8
-#define TILE_SIZE_SHARED 8
+#define TILE_SIZE_LEFT_ROW 64
+#define TILE_SIZE_RIGHT_COL 64
+#define TILE_SIZE_SHARED 64
 
 
 void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_matrix_cols, int **left_matrix,
