@@ -8,6 +8,8 @@
 #include <chrono>
 #include "MatrixConfig.h"
 
+#define PRINT_DEBUG
+
 void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, int **matrix);
 
 void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_matrix_cols, int **left_matrix,
@@ -76,6 +78,9 @@ int main (int argc, char * argv[]) {
     load_matrix(right_matrix_file, right_matrix_rows, right_matrix_cols, right_matrix);
     right_matrix_file.close();
 
+#ifdef PRINT_DEBUG
+    std::cout << "multiplying matrices" << std::endl;
+#endif
     auto start = std::chrono::high_resolution_clock::now();
     multiply_matrices(left_matrix_rows, left_matrix_cols, right_matrix_cols, left_matrix, right_matrix, output_matrix);
     auto end = std::chrono::high_resolution_clock::now();
@@ -112,9 +117,9 @@ int main (int argc, char * argv[]) {
     return 0;
 }
 
-#define TILE_SIZE_LEFT_ROW 8
-#define TILE_SIZE_RIGHT_COL 8
-#define TILE_SIZE_SHARED 8
+#define TILE_SIZE_LEFT_ROW 2
+#define TILE_SIZE_RIGHT_COL 2
+#define TILE_SIZE_SHARED 2
 
 
 void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_matrix_cols, int **left_matrix,
@@ -130,45 +135,77 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
             // zero out the block
             for (int left_row_elem = 0; left_row_elem < TILE_SIZE_LEFT_ROW; left_row_elem++) {
                 for (int right_col_elem = 0; right_col_elem < TILE_SIZE_RIGHT_COL;
-                    right_col_elem++) {
+                     right_col_elem++) {
                     output_matrix[left_row_elem + left_row_tile_base][
                         right_col_elem + right_col_tile_base] = 0;
                 }
             }
 
             for (int shared_dim_tile = 0; shared_dim_tile < left_matrix_cols /
-                TILE_SIZE_SHARED; shared_dim_tile++) {
+                                                            TILE_SIZE_SHARED; shared_dim_tile++) {
                 int shared_dim_tile_base = shared_dim_tile * TILE_SIZE_RIGHT_COL;
                 for (int left_row_elem = 0; left_row_elem < TILE_SIZE_LEFT_ROW; left_row_elem++) {
                     for (int right_col_elem = 0; right_col_elem < TILE_SIZE_RIGHT_COL; right_col_elem++) {
                         for (int shared_dim_elem = 0; shared_dim_elem < TILE_SIZE_SHARED; shared_dim_elem++) {
-                            output_matrix[left_row_elem + left_row_tile_base][
-                                right_col_elem + right_col_tile_base] +=
-                                    left_matrix[left_row_elem + left_row_tile_base][
-                                        shared_dim_elem + shared_dim_tile_base] *
-                                    right_matrix[shared_dim_elem + shared_dim_tile_base][
-                                        right_col_elem + right_col_tile_base];
+                            int left_row_location = left_row_elem + left_row_tile_base;
+                            int right_col_location = right_col_elem + right_col_tile_base;
+                            int shared_dim_location = shared_dim_elem + shared_dim_tile_base;
+#ifdef PRINT_DEBUG
+                            printf("Left  (%d, %d): %d \n", left_row_location, shared_dim_location,
+                                left_matrix[left_row_location][shared_dim_location]);
+                            printf("Right (%d, %d): %d \n", shared_dim_location, right_col_location,
+                                right_matrix[shared_dim_location][right_col_location]);
+#endif
+                            output_matrix[left_row_location][right_col_location] +=
+                                left_matrix[left_row_location][shared_dim_location] *
+                                right_matrix[shared_dim_location][right_col_location];
+
+#ifdef PRINT_DEBUG
+                            printf("Output (%d, %d): %d \n", left_row_location, right_col_location,
+                                output_matrix[left_row_location][right_col_location]);
+#endif
                         }
                     }
                 }
             }
         }
-        
+
+#ifdef PRINT_DEBUG
+       printf("Handling extra for left matrix row %d \n", left_row_tile_base);
+#endif
         // handle the parts that don't fit in right_col_tiles
-        for (int right_col = (right_matrix_cols / TILE_SIZE_RIGHT_COL) * TILE_SIZE_RIGHT_COL;
-            right_col < right_matrix_cols; right_col++) {
-            output_matrix[left_row_tile_base][right_col] = 0;
-            for (int shared_dim = 0; shared_dim < left_matrix_cols; shared_dim++) {
-                output_matrix[left_row_tile_base][right_col] +=
-                    left_matrix[left_row_tile_base][shared_dim] *
-                    right_matrix[shared_dim][right_col];
+        for (int left_row_elem = 0; left_row_elem < TILE_SIZE_LEFT_ROW; left_row_elem++) {
+            int left_row_location = left_row_elem + left_row_tile_base;
+            for (int right_col = (right_matrix_cols / TILE_SIZE_RIGHT_COL) * TILE_SIZE_RIGHT_COL;
+                 right_col < right_matrix_cols; right_col++) {
+                output_matrix[left_row_location][right_col] = 0;
+                for (int shared_dim = 0; shared_dim < left_matrix_cols; shared_dim++) {
+#ifdef PRINT_DEBUG
+                    printf("Left  (%d, %d): %d \n", left_row_location, shared_dim,
+                           left_matrix[left_row_location][shared_dim]);
+                    printf("Right (%d, %d): %d \n", shared_dim, right_col,
+                           right_matrix[shared_dim][right_col]);
+#endif
+
+                    output_matrix[left_row_location][right_col] +=
+                        left_matrix[left_row_location][shared_dim] *
+                        right_matrix[shared_dim][right_col];
+
+#ifdef PRINT_DEBUG
+                    printf("Output (%d, %d): %d \n", left_row_location, right_col,
+                           output_matrix[left_row_location][right_col]);
+#endif
+                }
             }
         }
     }
 
+#ifdef PRINT_DEBUG
+    printf("Handling extra for unhandled matrix rows \n");
+#endif
     // handle the parts that don't fit in left_row_tiles
     for (int left_row = (left_matrix_rows / TILE_SIZE_LEFT_ROW) * TILE_SIZE_LEFT_ROW;
-        left_row < left_matrix_rows; left_row++) {
+         left_row < left_matrix_rows; left_row++) {
         for (int right_col = 0; right_col < right_matrix_cols; right_col++) {
             output_matrix[left_row][right_col] = 0;
             for (int shared_dim = 0; shared_dim < left_matrix_cols; shared_dim++) {
