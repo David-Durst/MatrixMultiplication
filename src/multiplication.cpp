@@ -80,7 +80,8 @@ int main (int argc, char * argv[]) {
     multiply_matrices(left_matrix_rows, left_matrix_cols, right_matrix_cols, left_matrix, right_matrix, output_matrix);
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << duration.count() << std::endl;
+    timing_file << duration.count() << std::endl;
+    timing_file.close();
 
     // save output
     for (int output_row = 0; output_row < output_matrix_rows; output_row++) {

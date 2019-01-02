@@ -21,13 +21,13 @@ product_matrix = np.matmul(left_matrix, right_matrix)
 end = time.time()
 
 path_to_timing_file = path_to_binary + "/../times.csv"
-with open(path_to_timing_file) as times_file:
+with open(path_to_timing_file, 'a') as times_file:
     times_file.write("{},{},{},{},{},".format(str(num_rows_left_matrix),
                                str(num_cols_left_matrix),
                                str(num_cols_left_matrix),
                                str(num_cols_right_matrix),
                                str(round((end - start) * 1000))
-                               ), end='')
+                               ))
 
 output_dir = "{}x{}_by_{}x{}_{}".format(str(num_rows_left_matrix), str(num_cols_left_matrix), str(num_cols_left_matrix),
                                         str(num_cols_right_matrix), time.strftime("%Y%m%d-%H%M%S"))
@@ -40,10 +40,10 @@ np.savetxt(output_dir + "/numpy_product_matrix.csv", product_matrix, delimiter="
 
 command_to_run = "{}/matrix_multiplication {} {} {} {} {} {} {}".format(
     path_to_binary,
-    path_to_binary + "/../times.csv",
     output_dir + "/left_matrix.csv",
     output_dir + "/right_matrix.csv",
     output_dir + "/cpp_product_matrix.csv",
+    path_to_binary + "/../times.csv",
     num_rows_left_matrix,
     num_cols_left_matrix,
     num_cols_right_matrix)
