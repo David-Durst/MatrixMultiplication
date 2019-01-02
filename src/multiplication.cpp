@@ -59,10 +59,18 @@ int main (int argc, char * argv[]) {
     }
 
     // load the matrices data from disk to memory
+
+#ifdef PRINT_DEBUG
     std::cout << "loading left matrix" << std::endl;
+#endif
+
     load_matrix(left_matrix_file, left_matrix_rows, left_matrix_cols, left_matrix);
     left_matrix_file.close();
+
+#ifdef PRINT_DEBUG
     std::cout << "loading right matrix" << std::endl;
+#endif
+
     load_matrix(right_matrix_file, right_matrix_rows, right_matrix_cols, right_matrix);
     right_matrix_file.close();
 
@@ -103,12 +111,17 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
         for (int right_col = 0; right_col < right_matrix_cols; right_col++) {
             output_matrix[left_row][right_col] = 0;
             for (int shared_dim = 0; shared_dim < left_matrix_cols; shared_dim++) {
+#ifdef PRINT_DEBUG
                 printf("Left  (%d, %d): %d \n", left_row, shared_dim, left_matrix[left_row][shared_dim]);
                 printf("Right (%d, %d): %d \n", shared_dim, right_col, right_matrix[shared_dim][right_col]);
+#endif
                 output_matrix[left_row][right_col] +=
                     left_matrix[left_row][shared_dim] *
                     right_matrix[shared_dim][right_col];
+
+#ifdef PRINT_DEBUG
                 printf("Output (%d, %d): %d \n", left_row, right_col, output_matrix[left_row][right_col]);
+#endif
             }
         }
     }
@@ -118,7 +131,11 @@ void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, i
     for (int current_row = 0; current_row < matrix_rows; current_row++) {
         std::string line;
         std::getline(matrix_file, line);
+
+#ifdef PRINT_DEBUG
         std::cout << "Line: " << line << std::endl;
+#endif
+
         size_t last_comma = 0, next_comma = 0, position = 0;
         for (int current_col = 0; current_col < matrix_cols; current_col++) {
             // no comma for the last entry, need to pretend comma after last character
@@ -128,14 +145,22 @@ void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, i
             else {
                 next_comma = line.length();
             }
+
+#ifdef PRINT_DEBUG
             std::cout << "Position: " << position << std::endl;
             std::cout << "next_comma: " << next_comma << std::endl;
             std::cout << "last_comma: " << last_comma << std::endl;
             std::cout << "next_comma - last_comma: " << next_comma - last_comma << std::endl;
             std::cout << "Trying to convert " << line.substr(position, next_comma - last_comma) << std::endl;
+#endif
+
             matrix[current_row][current_col] =
                 stoi(line.substr(position, next_comma - last_comma));
+
+#ifdef PRINT_DEBUG
             printf("Matrix (%d, %d): %d \n", current_row, current_col, matrix[current_row][current_col]);
+#endif
+
             last_comma = next_comma;
             position = last_comma + 1;
         }
