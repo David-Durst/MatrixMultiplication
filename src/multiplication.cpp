@@ -176,7 +176,6 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
                 int left_row_location = left_row_elem + left_row_tile_base;
                 for (int right_col_elem = 0; right_col_elem < TILE_SIZE_RIGHT_COL; right_col_elem++) {
                     int right_col_location = right_col_elem + right_col_tile_base;
-                    output_matrix[left_row_location][right_col_location] = 0;
                     for (int shared_dim = (left_matrix_cols / TILE_SIZE_SHARED) * TILE_SIZE_SHARED;
                         shared_dim < left_matrix_cols; shared_dim++) {
 #ifdef PRINT_DEBUG
@@ -191,7 +190,7 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
                             right_matrix[shared_dim][right_col_location];
 
 #ifdef PRINT_DEBUG
-                        printf("Output (%d, %d): %d \n", left_row_location, right_col,
+                        printf("Output (%d, %d): %d \n", left_row_location, right_col_location,
                                output_matrix[left_row_location][right_col_location]);
 #endif
                     }
