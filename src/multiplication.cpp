@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <string>
+#include <chrono>
 #include "MatrixConfig.h"
 
 void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, int **matrix);
@@ -20,6 +21,7 @@ int main (int argc, char * argv[]) {
     std::ifstream left_matrix_file(argv[1]);
     std::ifstream right_matrix_file(argv[2]);
     std::ofstream output_matrix_file(argv[3]);
+    std::ofstream timing_file(argv[4], std::ofstream::out | std::ofstream::app);
 
     if (!left_matrix_file.is_open()) {
         std::cerr << "UNABLE TO OPEN LEFT MATRIX FILE: " << argv[1] << std::endl;
@@ -37,10 +39,10 @@ int main (int argc, char * argv[]) {
     }
 
     // load matrix parameters
-    int left_matrix_rows = std::stoi(argv[4]);
-    int left_matrix_cols = std::stoi(argv[5]);
-    int right_matrix_rows = std::stoi(argv[5]);
-    int right_matrix_cols = std::stoi(argv[6]);
+    int left_matrix_rows = std::stoi(argv[5]);
+    int left_matrix_cols = std::stoi(argv[6]);
+    int right_matrix_rows = std::stoi(argv[6]);
+    int right_matrix_cols = std::stoi(argv[7]);
     int output_matrix_rows = left_matrix_rows;
     int output_matrix_cols = right_matrix_cols;
 
@@ -74,7 +76,11 @@ int main (int argc, char * argv[]) {
     load_matrix(right_matrix_file, right_matrix_rows, right_matrix_cols, right_matrix);
     right_matrix_file.close();
 
+    auto start = std::chrono::high_resolution_clock::now();
     multiply_matrices(left_matrix_rows, left_matrix_cols, right_matrix_cols, left_matrix, right_matrix, output_matrix);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << duration.count() << std::endl;
 
     // save output
     for (int output_row = 0; output_row < output_matrix_rows; output_row++) {

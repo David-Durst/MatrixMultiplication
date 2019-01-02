@@ -1,4 +1,8 @@
 cmake_minimum_required (VERSION 3.12)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 project (Matrix_Multiplication)
 
 include_directories(${PROJECT_BINARY_DIR}/include)
@@ -8,6 +12,7 @@ file(GLOB MULT_SOURCES "${PROJECT_SOURCE_DIR}/src/*.cpp")
 # The version number
 set (Matrix_VERSION_MAJOR 0)
 set (Matrix_VERSION_MINOR 1)
+
 
 # from OpenCV via https://medium.com/@onur.dundar1/cmake-tutorial-585dd180109b
 # Disable in-source builds to prevent source tree corruption.
