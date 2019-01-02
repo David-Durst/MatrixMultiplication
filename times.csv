@@ -1,2 +1,3 @@
 number of rows in left matrix, number of columns in left matrix, number of rows in right matrix, number of columns in right matrix, numpy time (ms), cpp time (ms)
 1396,1755,1755,1203,1983,26250
+1771,1034,1034,1477,2070,18442
