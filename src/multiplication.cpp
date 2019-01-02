@@ -114,12 +114,19 @@ void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, i
     for (int current_row = 0; current_row < matrix_rows; current_row++) {
         std::string line;
         std::getline(matrix_file, line);
-        size_t last_comma = 0, next_comma = 0;
+        std::cout << "Line: " << line << std::endl;
+        size_t last_comma = 0, next_comma = 0, position = 0;
         for (int current_col = 0; current_col < matrix_cols - 1; current_col++) {
-            next_comma = line.find(",");
+            next_comma = line.substr(position).find(",") + position;
+            std::cout << "Position: " << position << std::endl;
+            std::cout << "next_comma: " << next_comma << std::endl;
+            std::cout << "last_comma: " << last_comma << std::endl;
+            std::cout << "next_comma - last_comma: " << next_comma - last_comma << std::endl;
+            std::cout << "Trying to convert " << line.substr(position, next_comma - last_comma) << std::endl;
             matrix[current_row][current_col] =
-                stoi(line.substr(last_comma, next_comma));
+                stoi(line.substr(position, next_comma - last_comma));
             last_comma = next_comma;
+            position = last_comma + 1;
         }
     }
 }
