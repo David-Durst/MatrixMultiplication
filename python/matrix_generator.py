@@ -7,8 +7,8 @@ import sys
 
 path_to_binary = sys.argv[1]
 
-MIN_ROWS_OR_COLS = 2
-MAX_ROWS_OR_COLS = 3
+MIN_ROWS_OR_COLS = 100
+MAX_ROWS_OR_COLS = 200
 num_rows_left_matrix = randint(MIN_ROWS_OR_COLS,MAX_ROWS_OR_COLS)
 # number of cols in left matrix must match number of rows in right
 num_cols_left_matrix = randint(MIN_ROWS_OR_COLS,MAX_ROWS_OR_COLS)
@@ -42,4 +42,5 @@ if not filecmp.cmp(output_dir + "/numpy_product_matrix.csv",
                    output_dir + "/cpp_product_matrix.csv"):
     raise ValueError("numpy and my implementation don't match")
 else:
+    os.system("rm -rf {}".format(output_dir))
     print("Success!")
