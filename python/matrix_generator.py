@@ -36,8 +36,6 @@ command_to_run = "{}/matrix_multiplication {} {} {} {} {} {}".format(
     num_cols_left_matrix,
     num_cols_right_matrix)
 
-print(path_to_binary)
-print(command_to_run)
 os.system(command_to_run)
 
 if not filecmp.cmp(output_dir + "/numpy_product_matrix.csv",
