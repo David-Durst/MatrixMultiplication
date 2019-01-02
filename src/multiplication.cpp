@@ -9,7 +9,7 @@
 #include <x86intrin.h>
 #include "MatrixConfig.h"
 
-void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, int16_t **matrix);
+void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, int16_t **matrix, bool row_major);
 
 void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_matrix_cols, int16_t **left_matrix,
                        int16_t **right_matrix, int **output_matrix);
@@ -49,13 +49,13 @@ int main (int argc, char * argv[]) {
 
     // setup matrices in memory
     int16_t **left_matrix = new int16_t*[left_matrix_rows];
-    int16_t **right_matrix = new int16_t*[right_matrix_rows];
+    int16_t **right_matrix = new int16_t*[right_matrix_cols];
     int **output_matrix = new int*[output_matrix_rows];
     for (int i = 0; i < left_matrix_rows; i++) {
         left_matrix[i] = new int16_t[left_matrix_cols];
     }
     for (int i = 0; i < right_matrix_rows; i++) {
-        right_matrix[i] = new int16_t[right_matrix_cols];
+        right_matrix[i] = new int16_t[right_matrix_rows];
     }
     for (int i = 0; i < output_matrix_rows; i++) {
         output_matrix[i] = new int[output_matrix_cols];
@@ -67,14 +67,14 @@ int main (int argc, char * argv[]) {
     std::cout << "loading left matrix" << std::endl;
 #endif
 
-    load_matrix(left_matrix_file, left_matrix_rows, left_matrix_cols, left_matrix);
+    load_matrix(left_matrix_file, left_matrix_rows, left_matrix_cols, left_matrix, true);
     left_matrix_file.close();
 
 #ifdef PRINT_DEBUG
     std::cout << "loading right matrix" << std::endl;
 #endif
 
-    load_matrix(right_matrix_file, right_matrix_rows, right_matrix_cols, right_matrix);
+    load_matrix(right_matrix_file, right_matrix_rows, right_matrix_cols, right_matrix, false);
     right_matrix_file.close();
 
 #ifdef PRINT_DEBUG
@@ -154,11 +154,13 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
                             printf("Left  (%d, %d): %d \n", left_row_location, shared_dim_location,
                                 left_matrix[left_row_location][shared_dim_location]);
                             printf("Right (%d, %d): %d \n", shared_dim_location, right_col_location,
-                                right_matrix[shared_dim_location][right_col_location]);
+                                right_matrix[right_col_location][shared_dim_location]);
 #endif
+                            //_mm256_load_si256(left_matrix[left_row_location][])
+                            //_mm256_mullo_epi16()
                             output_matrix[left_row_location][right_col_location] +=
                                 left_matrix[left_row_location][shared_dim_location] *
-                                right_matrix[shared_dim_location][right_col_location];
+                                right_matrix[right_col_location][shared_dim_location];
 
 #ifdef PRINT_DEBUG
                             printf("Output (%d, %d): %d \n", left_row_location, right_col_location,
@@ -184,12 +186,12 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
                         printf("Left  (%d, %d): %d \n", left_row_location, shared_dim,
                                left_matrix[left_row_location][shared_dim]);
                         printf("Right (%d, %d): %d \n", shared_dim, right_col_location,
-                               right_matrix[shared_dim][right_col_location]);
+                               right_matrix[right_col_location][shared_dim]);
 #endif
 
                         output_matrix[left_row_location][right_col_location] +=
                             left_matrix[left_row_location][shared_dim] *
-                            right_matrix[shared_dim][right_col_location];
+                            right_matrix[right_col_location][shared_dim];
 
 #ifdef PRINT_DEBUG
                         printf("Output (%d, %d): %d \n", left_row_location, right_col_location,
@@ -214,12 +216,12 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
                     printf("Left  (%d, %d): %d \n", left_row_location, shared_dim,
                            left_matrix[left_row_location][shared_dim]);
                     printf("Right (%d, %d): %d \n", shared_dim, right_col,
-                           right_matrix[shared_dim][right_col]);
+                           right_matrix[right_col][shared_dim]);
 #endif
 
                     output_matrix[left_row_location][right_col] +=
                         left_matrix[left_row_location][shared_dim] *
-                        right_matrix[shared_dim][right_col];
+                        right_matrix[right_col][shared_dim];
 
 #ifdef PRINT_DEBUG
                     printf("Output (%d, %d): %d \n", left_row_location, right_col,
@@ -241,11 +243,11 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
             for (int shared_dim = 0; shared_dim < left_matrix_cols; shared_dim++) {
 #ifdef PRINT_DEBUG
                 printf("Left  (%d, %d): %d \n", left_row, shared_dim, left_matrix[left_row][shared_dim]);
-                printf("Right (%d, %d): %d \n", shared_dim, right_col, right_matrix[shared_dim][right_col]);
+                printf("Right (%d, %d): %d \n", shared_dim, right_col, right_matrix[right_col][shared_dim]);
 #endif
                 output_matrix[left_row][right_col] +=
                     left_matrix[left_row][shared_dim] *
-                    right_matrix[shared_dim][right_col];
+                    right_matrix[right_col][shared_dim];
 
 #ifdef PRINT_DEBUG
                 printf("Output (%d, %d): %d \n", left_row, right_col, output_matrix[left_row][right_col]);
@@ -255,7 +257,7 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
     }
 }
 
-void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, int16_t **matrix) {// load data into matrices
+void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, int16_t **matrix, bool row_major) {
     for (int current_row = 0; current_row < matrix_rows; current_row++) {
         std::string line;
         std::getline(matrix_file, line);
@@ -282,12 +284,22 @@ void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, i
             std::cout << "Trying to convert " << line.substr(position, next_comma - last_comma) << std::endl;
 #endif
 
-            matrix[current_row][current_col] =
-                (int16_t) stoi(line.substr(position, next_comma - last_comma));
+            if (row_major) {
+                matrix[current_row][current_col] =
+                    (int16_t) stoi(line.substr(position, next_comma - last_comma));
 
 #ifdef PRINT_DEBUG
-            printf("Matrix (%d, %d): %d \n", current_row, current_col, matrix[current_row][current_col]);
+                printf("Matrix (%d, %d): %d \n", current_row, current_col, matrix[current_row][current_col]);
 #endif
+            }
+            else {
+                matrix[current_col][current_row] =
+                    (int16_t) stoi(line.substr(position, next_comma - last_comma));
+
+#ifdef PRINT_DEBUG
+                printf("Matrix (%d, %d): %d \n", current_row, current_col, matrix[current_col][current_row]);
+#endif
+            }
 
             last_comma = next_comma;
             position = last_comma + 1;
