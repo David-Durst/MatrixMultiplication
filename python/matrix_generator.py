@@ -4,6 +4,7 @@ import time
 from random import randint
 import filecmp
 import sys
+import subprocess
 
 path_to_binary = sys.argv[1]
 
@@ -21,13 +22,17 @@ product_matrix = np.matmul(left_matrix, right_matrix)
 end = time.time()
 
 path_to_timing_file = path_to_binary + "/../times.csv"
+label = subprocess.check_output(["git", "describe --always"]).strip()
 with open(path_to_timing_file, 'a') as times_file:
-    times_file.write("{},{},{},{},{},".format(str(num_rows_left_matrix),
-                               str(num_cols_left_matrix),
-                               str(num_cols_left_matrix),
-                               str(num_cols_right_matrix),
-                               str(round((end - start) * 1000))
-                               ))
+    times_file.write("{},{},{},{},{},{},{},".format(
+        time.strftime("%Y%m%d-%H%M%S"),
+        label,
+        str(num_rows_left_matrix),
+        str(num_cols_left_matrix),
+        str(num_cols_left_matrix),
+        str(num_cols_right_matrix),
+        str(round((end - start) * 1000))
+    ))
 
 output_dir = "{}x{}_by_{}x{}_{}".format(str(num_rows_left_matrix), str(num_cols_left_matrix), str(num_cols_left_matrix),
                                         str(num_cols_right_matrix), time.strftime("%Y%m%d-%H%M%S"))
