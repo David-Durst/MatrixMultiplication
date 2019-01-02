@@ -6,12 +6,13 @@
 #include <stdio.h>
 #include <string>
 #include <chrono>
+#include <x86intrin.h>
 #include "MatrixConfig.h"
 
-void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, int **matrix);
+void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, int16_t **matrix);
 
-void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_matrix_cols, int **left_matrix,
-                       int **right_matrix, int **output_matrix);
+void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_matrix_cols, int16_t **left_matrix,
+                       int16_t **right_matrix, int **output_matrix);
 
 int main (int argc, char * argv[]) {
     fprintf(stdout, "%s Version %d.%d \n", argv[0], Matrix_VERSION_MAJOR,
@@ -47,14 +48,14 @@ int main (int argc, char * argv[]) {
     int output_matrix_cols = right_matrix_cols;
 
     // setup matrices in memory
-    int **left_matrix = new int*[left_matrix_rows];
-    int **right_matrix = new int*[right_matrix_rows];
+    int16_t **left_matrix = new int16_t*[left_matrix_rows];
+    int16_t **right_matrix = new int16_t*[right_matrix_rows];
     int **output_matrix = new int*[output_matrix_rows];
     for (int i = 0; i < left_matrix_rows; i++) {
-        left_matrix[i] = new int[left_matrix_cols];
+        left_matrix[i] = new int16_t[left_matrix_cols];
     }
     for (int i = 0; i < right_matrix_rows; i++) {
-        right_matrix[i] = new int[right_matrix_cols];
+        right_matrix[i] = new int16_t[right_matrix_cols];
     }
     for (int i = 0; i < output_matrix_rows; i++) {
         output_matrix[i] = new int[output_matrix_cols];
@@ -120,8 +121,9 @@ int main (int argc, char * argv[]) {
 #define TILE_SIZE_SHARED 32
 
 
-void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_matrix_cols, int **left_matrix,
-                       int **right_matrix, int **output_matrix) {
+
+void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_matrix_cols, int16_t **left_matrix,
+                       int16_t **right_matrix, int **output_matrix) {
 
     // do the matrix multiplication in tiles
     for (int left_row_tile = 0; left_row_tile < left_matrix_rows / TILE_SIZE_LEFT_ROW; left_row_tile++) {
@@ -253,7 +255,7 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
     }
 }
 
-void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, int **matrix) {// load data into matrices
+void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, int16_t **matrix) {// load data into matrices
     for (int current_row = 0; current_row < matrix_rows; current_row++) {
         std::string line;
         std::getline(matrix_file, line);
@@ -281,7 +283,7 @@ void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, i
 #endif
 
             matrix[current_row][current_col] =
-                stoi(line.substr(position, next_comma - last_comma));
+                (int16_t) stoi(line.substr(position, next_comma - last_comma));
 
 #ifdef PRINT_DEBUG
             printf("Matrix (%d, %d): %d \n", current_row, current_col, matrix[current_row][current_col]);
