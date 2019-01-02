@@ -112,9 +112,63 @@ int main (int argc, char * argv[]) {
     return 0;
 }
 
+#define TILE_SIZE_LEFT_ROW 8
+#define TILE_SIZE_RIGHT_COL 8
+#define TILE_SIZE_SHARED 8
+
+
 void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_matrix_cols, int **left_matrix,
                        int **right_matrix, int **output_matrix) {
-    for (int left_row = 0; left_row < left_matrix_rows; left_row++) {
+
+    // do the matrix multiplication in tiles
+    for (int left_row_tile = 0; left_row_tile < left_matrix_rows / TILE_SIZE_LEFT_ROW; left_row_tile++) {
+        // expand the left_row_tile counter so it's in normal coordinates
+        int left_row_tile_base = left_row_tile * TILE_SIZE_LEFT_ROW;
+        for (int right_col_tile = 0; right_col_tile < right_matrix_cols / TILE_SIZE_RIGHT_COL; right_col_tile++) {
+            // expand the right_col_tile counter so it's in normal coordinates
+            int right_col_tile_base = right_col_tile * TILE_SIZE_RIGHT_COL;
+            // zero out the block
+            for (int left_row_elem = 0; left_row_elem < TILE_SIZE_LEFT_ROW; left_row_elem++) {
+                for (int right_col_elem = 0; right_col_elem < TILE_SIZE_RIGHT_COL;
+                    right_col_elem++) {
+                    output_matrix[left_row_elem + left_row_tile_base][
+                        right_col_elem + right_col_tile_base] = 0;
+                }
+            }
+
+            for (int shared_dim_tile = 0; shared_dim_tile < left_matrix_cols /
+                TILE_SIZE_SHARED; shared_dim_tile++) {
+                int shared_dim_tile_base = shared_dim_tile * TILE_SIZE_RIGHT_COL;
+                for (int left_row_elem = 0; left_row_elem < TILE_SIZE_LEFT_ROW; left_row_elem++) {
+                    for (int right_col_elem = 0; right_col_elem < TILE_SIZE_RIGHT_COL; right_col_elem++) {
+                        for (int shared_dim_elem = 0; shared_dim_elem < TILE_SIZE_SHARED; shared_dim_elem++) {
+                            output_matrix[left_row_elem + left_row_tile_base][
+                                right_col_elem + right_col_tile_base] +=
+                                    left_matrix[left_row_elem + left_row_tile_base][
+                                        shared_dim_elem + shared_dim_tile_base] *
+                                    right_matrix[shared_dim_elem + shared_dim_tile_base][
+                                        right_col_elem + right_col_tile_base];
+                        }
+                    }
+                }
+            }
+        }
+        
+        // handle the parts that don't fit in right_col_tiles
+        for (int right_col = (right_matrix_cols / TILE_SIZE_RIGHT_COL) * TILE_SIZE_RIGHT_COL;
+            right_col < right_matrix_cols; right_col++) {
+            output_matrix[left_row_tile_base][right_col] = 0;
+            for (int shared_dim = 0; shared_dim < left_matrix_cols; shared_dim++) {
+                output_matrix[left_row_tile_base][right_col] +=
+                    left_matrix[left_row_tile_base][shared_dim] *
+                    right_matrix[shared_dim][right_col];
+            }
+        }
+    }
+
+    // handle the parts that don't fit in left_row_tiles
+    for (int left_row = (left_matrix_rows / TILE_SIZE_LEFT_ROW) * TILE_SIZE_LEFT_ROW;
+        left_row < left_matrix_rows; left_row++) {
         for (int right_col = 0; right_col < right_matrix_cols; right_col++) {
             output_matrix[left_row][right_col] = 0;
             for (int shared_dim = 0; shared_dim < left_matrix_cols; shared_dim++) {
