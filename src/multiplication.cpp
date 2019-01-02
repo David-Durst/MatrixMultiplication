@@ -22,17 +22,17 @@ int main (int argc, char * argv[]) {
     std::ofstream output_matrix_file(argv[3]);
 
     if (!left_matrix_file.is_open()) {
-        std::cout << "UNABLE TO OPEN LEFT MATRIX FILE: " << argv[1] << std::endl;
+        std::cerr << "UNABLE TO OPEN LEFT MATRIX FILE: " << argv[1] << std::endl;
         return 1;
     }
 
     if (!right_matrix_file.is_open()) {
-        std::cout << "UNABLE TO OPEN RIGHT MATRIX FILE: " << argv[2] << std::endl;
+        std::cerr << "UNABLE TO OPEN RIGHT MATRIX FILE: " << argv[2] << std::endl;
         return 1;
     }
 
     if (!output_matrix_file.is_open()) {
-        std::cout << "UNABLE TO OPEN OUTPUT FILE: " << argv[3] << std::endl;
+        std::cerr << "UNABLE TO OPEN OUTPUT FILE: " << argv[3] << std::endl;
         return 1;
     }
 
@@ -102,6 +102,8 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
     for (int left_row = 0; left_row < left_matrix_rows; left_row++) {
         for (int right_col = 0; right_col < right_matrix_cols; right_col++) {
             for (int shared_dim = 0; shared_dim < left_matrix_cols; shared_dim++) {
+                printf("Left  (%d, %d): %d \n", left_row, shared_dim, left_matrix[left_row][shared_dim]);
+                printf("Right (%d, %d): %d \n", shared_dim, right_col, right_matrix[shared_dim][right_col]);
                 output_matrix[left_row][right_col] +=
                     left_matrix[left_row][shared_dim] *
                     right_matrix[shared_dim][right_col];
@@ -116,8 +118,14 @@ void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, i
         std::getline(matrix_file, line);
         std::cout << "Line: " << line << std::endl;
         size_t last_comma = 0, next_comma = 0, position = 0;
-        for (int current_col = 0; current_col < matrix_cols - 1; current_col++) {
-            next_comma = line.substr(position).find(",") + position;
+        for (int current_col = 0; current_col < matrix_cols; current_col++) {
+            // no comma for the last entry, need to pretend comma after last character
+            if (current_col < matrix_cols - 1) {
+                next_comma = line.substr(position).find(",") + position;
+            }
+            else {
+                next_comma = line.length();
+            }
             std::cout << "Position: " << position << std::endl;
             std::cout << "next_comma: " << next_comma << std::endl;
             std::cout << "last_comma: " << last_comma << std::endl;
@@ -125,6 +133,7 @@ void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, i
             std::cout << "Trying to convert " << line.substr(position, next_comma - last_comma) << std::endl;
             matrix[current_row][current_col] =
                 stoi(line.substr(position, next_comma - last_comma));
+            printf("Matrix (%d, %d): %d \n", current_row, current_col, matrix[current_row][current_col]);
             last_comma = next_comma;
             position = last_comma + 1;
         }
