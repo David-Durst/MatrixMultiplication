@@ -8,8 +8,6 @@
 #include <chrono>
 #include "MatrixConfig.h"
 
-#define PRINT_DEBUG
-
 void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, int **matrix);
 
 void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_matrix_cols, int **left_matrix,
@@ -117,9 +115,9 @@ int main (int argc, char * argv[]) {
     return 0;
 }
 
-#define TILE_SIZE_LEFT_ROW 2
-#define TILE_SIZE_RIGHT_COL 2
-#define TILE_SIZE_SHARED 2
+#define TILE_SIZE_LEFT_ROW 8
+#define TILE_SIZE_RIGHT_COL 8
+#define TILE_SIZE_SHARED 8
 
 
 void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_matrix_cols, int **left_matrix,
@@ -168,10 +166,41 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
                     }
                 }
             }
+
+#ifdef PRINT_DEBUG
+            printf("Handling extra shared dim left matrix row tile %d and right matrix col tile %d \n",
+                left_row_tile_base, right_col_tile_base);
+#endif
+            // handle the parts that don't fit in right_col_tiles
+            for (int left_row_elem = 0; left_row_elem < TILE_SIZE_LEFT_ROW; left_row_elem++) {
+                int left_row_location = left_row_elem + left_row_tile_base;
+                for (int right_col_elem = 0; right_col_elem < TILE_SIZE_RIGHT_COL; right_col_elem++) {
+                    int right_col_location = right_col_elem + right_col_tile_base;
+                    output_matrix[left_row_location][right_col_location] = 0;
+                    for (int shared_dim = (left_matrix_cols / TILE_SIZE_SHARED) * TILE_SIZE_SHARED;
+                        shared_dim < left_matrix_cols; shared_dim++) {
+#ifdef PRINT_DEBUG
+                        printf("Left  (%d, %d): %d \n", left_row_location, shared_dim,
+                               left_matrix[left_row_location][shared_dim]);
+                        printf("Right (%d, %d): %d \n", shared_dim, right_col_location,
+                               right_matrix[shared_dim][right_col_location]);
+#endif
+
+                        output_matrix[left_row_location][right_col_location] +=
+                            left_matrix[left_row_location][shared_dim] *
+                            right_matrix[shared_dim][right_col_location];
+
+#ifdef PRINT_DEBUG
+                        printf("Output (%d, %d): %d \n", left_row_location, right_col,
+                               output_matrix[left_row_location][right_col_location]);
+#endif
+                    }
+                }
+            }
         }
 
 #ifdef PRINT_DEBUG
-       printf("Handling extra for left matrix row %d \n", left_row_tile_base);
+       printf("Handling extra right matrix cols for left matrix row tile %d \n", left_row_tile_base);
 #endif
         // handle the parts that don't fit in right_col_tiles
         for (int left_row_elem = 0; left_row_elem < TILE_SIZE_LEFT_ROW; left_row_elem++) {
