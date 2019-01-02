@@ -1,1 +1,2 @@
 time, git commit hash, number of rows in left matrix, number of columns in left matrix, number of rows in right matrix, number of columns in right matrix, numpy time (ms), cpp time (ms)
+20190102-121928,0b1a8b2,1007,1840,1840,1542,2117,22857

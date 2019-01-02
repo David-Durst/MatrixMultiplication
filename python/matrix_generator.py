@@ -22,7 +22,7 @@ product_matrix = np.matmul(left_matrix, right_matrix)
 end = time.time()
 
 path_to_timing_file = path_to_binary + "/../times.csv"
-label = subprocess.check_output(["git", "describe --always"]).strip()
+label = subprocess.check_output(["git", "describe", "--always"]).strip().decode("utf-8")
 with open(path_to_timing_file, 'a') as times_file:
     times_file.write("{},{},{},{},{},{},{},".format(
         time.strftime("%Y%m%d-%H%M%S"),
