@@ -1,6 +1,6 @@
 # Matrix Multiplication
 ## Overview
-This is an optimized matrix multiplication implementation for arbitrary matrices of signed, 16 bit integers.
+This is an optimized matrix multiplication implementation for matrices of signed, 16 bit integers.
 
 The final version of the implementation was 4.87 times faster than NumPy using MKL when multiplying a 1678x1693 matrix by a 1693x1622 matrix.
 
