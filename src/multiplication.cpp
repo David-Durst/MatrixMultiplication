@@ -119,6 +119,7 @@ int main (int argc, char * argv[]) {
 #define TILE_SIZE_LEFT_ROW 32
 #define TILE_SIZE_RIGHT_COL 32
 #define TILE_SIZE_SHARED 32
+#define VECTOR_SIZE 16
 
 
 
@@ -146,7 +147,7 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
                 int shared_dim_tile_base = shared_dim_tile * TILE_SIZE_RIGHT_COL;
                 for (int left_row_elem = 0; left_row_elem < TILE_SIZE_LEFT_ROW; left_row_elem++) {
                     for (int right_col_elem = 0; right_col_elem < TILE_SIZE_RIGHT_COL; right_col_elem++) {
-                        for (int shared_dim_elem = 0; shared_dim_elem < TILE_SIZE_SHARED; shared_dim_elem++) {
+                        for (int shared_dim_elem = 0; shared_dim_elem < TILE_SIZE_SHARED; shared_dim_elem += VECTOR_SIZE) {
                             int left_row_location = left_row_elem + left_row_tile_base;
                             int right_col_location = right_col_elem + right_col_tile_base;
                             int shared_dim_location = shared_dim_elem + shared_dim_tile_base;
@@ -156,11 +157,30 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
                             printf("Right (%d, %d): %d \n", shared_dim_location, right_col_location,
                                 right_matrix[right_col_location][shared_dim_location]);
 #endif
-                            //_mm256_load_si256(left_matrix[left_row_location][])
-                            //_mm256_mullo_epi16()
+                            auto left_matrix_in_register =
+                                _mm256_load_si256((__m256i const *) &left_matrix[left_row_location][shared_dim_location]);
+                            auto right_matrix_in_register =
+                                _mm256_load_si256((__m256i const *) &right_matrix[right_col_location][shared_dim_location]);
+                            auto vector_product =
+                                _mm256_mullo_epi16(left_matrix_in_register, right_matrix_in_register);
+                            // need to convert 16 bit ints to 32 bit ints and don't have room in one 256 bit
+                            // registers. Need to split 256 into two 256 bit registers and then convert each one.
+                            auto first_half_of_vector = _mm256_extracti128_si256(vector_product, 0);
+                            auto second_half_of_vector = _mm256_extracti128_si256(vector_product, 1);
+                            auto first_half_of_vector_32bit = _mm256_cvtepi16_epi32(first_half_of_vector);
+                            auto second_half_of_vector_32bit = _mm256_cvtepi16_epi32(second_half_of_vector);
+                            // an efficient way to express a reduce tree. Shifting vector and adding first half with second
+                            auto sum_vector = _mm256_add_epi32(first_half_of_vector_32bit, second_half_of_vector_32bit);
+                            sum_vector = _mm256_add_epi32(sum_vector, _mm256_srli_epi32(sum_vector, 16));
+                            sum_vector = _mm256_add_epi32(sum_vector, _mm256_srli_epi32(sum_vector, 8));
+                            sum_vector = _mm256_add_epi32(sum_vector, _mm256_srli_epi32(sum_vector, 4));
+                            output_matrix[left_row_location][right_col_location] +=
+                                _mm256_cvtsi256_si32(sum_vector);
+                            /*
                             output_matrix[left_row_location][right_col_location] +=
                                 left_matrix[left_row_location][shared_dim_location] *
                                 right_matrix[right_col_location][shared_dim_location];
+                                */
 
 #ifdef PRINT_DEBUG
                             printf("Output (%d, %d): %d \n", left_row_location, right_col_location,
