@@ -184,11 +184,6 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
                                 _mm_srli_si128(sum_vector_2_ints, 4));
                             output_matrix[left_row_location][right_col_location] +=
                                 _mm_cvtsi128_si32(sum_vector_1_int);
-                            /*
-                            output_matrix[left_row_location][right_col_location] +=
-                                left_matrix[left_row_location][shared_dim_location] *
-                                right_matrix[right_col_location][shared_dim_location];
-                                */
 
 #ifdef PRINT_DEBUG
                             printf("Output (%d, %d): %d \n", left_row_location, right_col_location,
