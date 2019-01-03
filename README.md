@@ -5,7 +5,7 @@ This is an optimized matrix multiplication implementation for matrices of signed
 The final version of the implementation was 4.87 times faster than NumPy using MKL when multiplying a 1678x1693 matrix by a 1693x1622 matrix.
 
 ## Results
-This chart shows the improvement of my implementation's performance over time relative to NumPy's on my Macbook Pro Summer 2017 with an Intel(R) Core(TM) i7-7920HQ CPU @ 3.10GHz and 16 GB of RAM.
+This chart shows the improvement of my implementation's performance over time relative to NumPy's on my MacBook Pro Summer 2017 with an Intel(R) Core(TM) i7-7920HQ CPU @ 3.10GHz and 16 GB of RAM.
 
 ![Chart of my implementation's performance vs NumPy's](https://raw.githubusercontent.com/David-Durst/MatrixMultiplication/master/results.png)
 
