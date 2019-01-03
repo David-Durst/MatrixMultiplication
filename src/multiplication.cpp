@@ -157,6 +157,7 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
                             printf("Right (%d, %d): %d \n", shared_dim_location, right_col_location,
                                 right_matrix[right_col_location][shared_dim_location]);
 #endif
+                            auto x = _mm256_set_epi16(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15);
                             auto left_matrix_in_register =
                                 _mm256_load_si256((__m256i const *) &left_matrix[left_row_location][shared_dim_location]);
                             auto right_matrix_in_register =
@@ -170,12 +171,26 @@ void multiply_matrices(int left_matrix_rows, int left_matrix_cols, int right_mat
                             auto first_half_of_vector_32bit = _mm256_cvtepi16_epi32(first_half_of_vector);
                             auto second_half_of_vector_32bit = _mm256_cvtepi16_epi32(second_half_of_vector);
                             // an efficient way to express a reduce tree. Shifting vector and adding first half with second
-                            auto sum_vector = _mm256_add_epi32(first_half_of_vector_32bit, second_half_of_vector_32bit);
-                            sum_vector = _mm256_add_epi32(sum_vector, _mm256_srli_epi32(sum_vector, 16));
-                            sum_vector = _mm256_add_epi32(sum_vector, _mm256_srli_epi32(sum_vector, 8));
-                            sum_vector = _mm256_add_epi32(sum_vector, _mm256_srli_epi32(sum_vector, 4));
+                            auto sum_vector_8_ints = _mm256_add_epi32(first_half_of_vector_32bit, second_half_of_vector_32bit);
+                            auto sum_vector = sum_vector_8_ints;
+                            auto sum_vector_4_ints = _mm_add_epi32(
+                                _mm256_extracti128_si256(sum_vector_8_ints, 0),
+                                _mm256_extracti128_si256(sum_vector_8_ints, 1));
+                            auto temp = _mm256_srli_epi32(sum_vector, 4);
+                            auto temp2 = _mm256_srli_si256(sum_vector, 4);
+                            auto sum_vector_2_ints = _mm_add_epi32(
+                                sum_vector_4_ints,
+                                _mm_srli_si128(sum_vector_4_ints, 8));
+
+                            auto sum_vector_1_int = _mm_add_epi32(
+                                sum_vector_2_ints,
+                                _mm_srli_si128(sum_vector_2_ints, 4));
+
+                            auto sum_vector2 = _mm256_add_epi32(sum_vector, _mm256_srli_epi32(sum_vector, 16));
+                            auto sum_vector3 = _mm256_add_epi32(sum_vector, _mm256_srli_epi32(sum_vector, 8));
+                            auto sum_vector4 = _mm256_add_epi32(sum_vector, _mm256_srli_epi32(sum_vector, 4));
                             output_matrix[left_row_location][right_col_location] +=
-                                _mm256_cvtsi256_si32(sum_vector);
+                                _mm_cvtsi128_si32(sum_vector_1_int);
                             /*
                             output_matrix[left_row_location][right_col_location] +=
                                 left_matrix[left_row_location][shared_dim_location] *

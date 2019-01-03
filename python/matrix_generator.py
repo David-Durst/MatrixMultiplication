@@ -8,15 +8,17 @@ import subprocess
 
 path_to_binary = sys.argv[1]
 
-MIN_ROWS_OR_COLS = 1600
-MAX_ROWS_OR_COLS = 1700
+MIN_ROWS_OR_COLS = 32#1600
+MAX_ROWS_OR_COLS = 32#1700
 num_rows_left_matrix = randint(MIN_ROWS_OR_COLS, MAX_ROWS_OR_COLS)
 # number of cols in left matrix must match number of rows in right
 num_cols_left_matrix = randint(MIN_ROWS_OR_COLS, MAX_ROWS_OR_COLS)
 num_cols_right_matrix = randint(MIN_ROWS_OR_COLS, MAX_ROWS_OR_COLS)
 
-left_matrix = np.random.randint(100, size=(num_rows_left_matrix, num_cols_left_matrix))
-right_matrix = np.random.randint(100, size=(num_cols_left_matrix, num_cols_right_matrix))
+#left_matrix = np.random.randint(100, size=(num_rows_left_matrix, num_cols_left_matrix))
+left_matrix = np.random.randint(10, size=(num_rows_left_matrix, num_cols_left_matrix))
+#right_matrix = np.random.randint(100, size=(num_cols_left_matrix, num_cols_right_matrix))
+right_matrix = np.random.randint(10, size=(num_cols_left_matrix, num_cols_right_matrix))
 start = time.time()
 product_matrix = np.matmul(left_matrix, right_matrix)
 end = time.time()
