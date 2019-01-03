@@ -8,8 +8,8 @@ import subprocess
 
 path_to_binary = sys.argv[1]
 
-MIN_ROWS_OR_COLS = 1000
-MAX_ROWS_OR_COLS = 2000
+MIN_ROWS_OR_COLS = 1600
+MAX_ROWS_OR_COLS = 1700
 num_rows_left_matrix = randint(MIN_ROWS_OR_COLS, MAX_ROWS_OR_COLS)
 # number of cols in left matrix must match number of rows in right
 num_cols_left_matrix = randint(MIN_ROWS_OR_COLS, MAX_ROWS_OR_COLS)
