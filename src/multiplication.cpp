@@ -54,7 +54,7 @@ int main (int argc, char * argv[]) {
     for (int i = 0; i < left_matrix_rows; i++) {
         left_matrix[i] = new int16_t[left_matrix_cols];
     }
-    for (int i = 0; i < right_matrix_rows; i++) {
+    for (int i = 0; i < right_matrix_cols; i++) {
         right_matrix[i] = new int16_t[right_matrix_rows];
     }
     for (int i = 0; i < output_matrix_rows; i++) {
@@ -282,6 +282,7 @@ void load_matrix(std::ifstream &matrix_file, int matrix_rows, int matrix_cols, i
             std::cout << "last_comma: " << last_comma << std::endl;
             std::cout << "next_comma - last_comma: " << next_comma - last_comma << std::endl;
             std::cout << "Trying to convert " << line.substr(position, next_comma - last_comma) << std::endl;
+            std::cout << "The column is: " << current_col << " and the current row is: " << current_row << std::endl;
 #endif
 
             if (row_major) {
