@@ -16,7 +16,7 @@ The results.xlsx file contains these results in text form along with the git com
 ## Implementation
 The implementation is the multiply_matrices function in src/multiplication.cpp.
 
-There is a build system and test harness.
+There is a CMake build system and test harness that compares my implementation with NumPy's.
 
 ## Installation
 To build and run the code, you need cmake 3.12 or newer, clang or gcc, and python 3.6 or newer with numpy installed. Your processor must support the AVX2 instruction set.
